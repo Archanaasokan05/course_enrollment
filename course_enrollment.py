@@ -18,6 +18,9 @@ class CourseEnrollment:
             if fee<0:
                 print("Fee must be non-negative")
                 return
+            if status not in["Active","Completed","Cancelled"]:
+                print("Invalid Status")
+                return
             query="""insert into enrollments
                     (student_name,course_name,duration_months,enrollment_date,fee,status)
                     values(%s,%s,%s,%s,%s,%s)"""
@@ -42,6 +45,21 @@ class CourseEnrollment:
                 print("No Records Found")
         except:
             print("Failed to Read")
+
+    # View enrollments(fee)
+    def sort_fee(self):
+        try:
+            c=self.con.cursor()
+            query="select*from enrollments order by fee desc"
+            c.execute(query)
+            records=c.fetchall()
+            if records:
+                for row in records:
+                    print(row)
+            else:
+                print("No Records Found")
+        except:
+            print("Failed to Sort")
 
     # View enrollments(status)
     def filter(self,status):
@@ -93,6 +111,12 @@ class CourseEnrollment:
     # Update enrollment status
     def update(self,id,status,fee):
         try:
+            if fee<0:
+                print("Fee must be non-negative")
+                return
+            if status not in ["Active","Completed","Cancelled"]:
+                print("Invalid Status")
+                return
             c=self.con.cursor()
             query="update enrollments set status=%s,fee=%s where enrollment_id=%s"
             data=(status,fee,id)
@@ -160,21 +184,27 @@ while(1):
         n=input("Enter Student Name:")
         c=input("Enter Course Name:")
         d=int(input("Enter Duration in Months:"))
-        date=input("Enter Enrollment Date (YYYY-MM-DD):")
+        date=input("Enter Enrollment Date(YYYY-MM-DD):")
         f=int(input("Enter Fee:"))
         s=input("Enter Status:")
         p.create(n,c,d,date,f,s)
 
+
     elif ch==2:
-        print("1.View All")
+        print("1.View All(Recent Date First)")
         print("2.Filter by Status")
-        choice=int(input("Enter choice:"))
+        print("3.Sort by Fee(Highest First)")
+        choice = int(input("Enter choice:"))
 
         if choice==1:
             p.read()
         elif choice==2:
             s=input("Enter Status:")
             p.filter(s)
+        elif choice==3:
+            p.sort_fee()
+        else:
+            print("Invalid Choice")
 
     elif ch==3:
         print("1.Search by ID")
